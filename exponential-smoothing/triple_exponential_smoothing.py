@@ -10,10 +10,10 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 class TripleExponentialSmoothing:
     def __init__ (self, alpha, beta, gamma):
-        self.data = None;
-        self.s = None;
-        self.b = None;
-        self.c = None;
+        self.data = None
+        self.s = None
+        self.b = None
+        self.c = None
         self.c_length = 0
         self.alpha = alpha
         self.beta = beta
@@ -51,27 +51,33 @@ class TripleExponentialSmoothing:
         return forcast
 
 
-df = pd.read_csv("./DailyDelhiClimateTrain.csv")
+df = pd.read_csv("../DailyDelhiClimateTrain.csv")
 
-data = df["meantemp"].dropna().to_numpy();
+data = df["meantemp"].dropna().to_numpy()
+
+dfT = pd.read_csv("../DailyDelhiClimateTest.csv")
+
+realData = dfT["meantemp"].dropna().to_numpy()
 
 dates = df["date"]
 
-dates = pd.to_datetime(dates);
+dates = pd.to_datetime(dates)
 
 alpha = 0.5
 beta = 0.3
 gamma = 0.7
 
-model = TripleExponentialSmoothing(alpha, beta, gamma);
+model = TripleExponentialSmoothing(alpha, beta, gamma)
 
-smoothed_values = model.fit(data, 365);
-forecasts = model.predict(365*5)
+smoothed_values = model.fit(data, 365)
+forecasts = model.predict(114)
 
 
 plt.figure(figsize=(12, 6))
-plt.plot(data, label="Original", marker="o")
-plt.plot(smoothed_values+forecasts, label="Triple", linestyle="--", marker="x")
+# plt.plot(data, label="Original", marker="o")
+# plt.plot(smoothed_values+forecasts, label="Triple", linestyle="--", marker="x")
+plt.plot(forecasts, label="Triple", linestyle="--", marker="x")
+plt.plot(realData, label="Real", marker="o")
 plt.legend()
 plt.xlabel("Time")
 plt.ylabel("Value")
