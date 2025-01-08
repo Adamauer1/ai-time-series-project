@@ -141,8 +141,9 @@ def run_climate_data(n_lags = 3):
 
     test_dates = dates.iloc[-len(y_test):]
     plt.figure(figsize=(12, 6))
-    plt.plot(test_dates, y_test, label='Actual', color='blue', marker='o')
-    plt.plot(test_dates, y_predictions, label='Predicted', color='red', linestyle='--', marker='x')
+    #plt.plot(test_dates, y_test, label='Actual', color='blue', marker='o')
+    #plt.plot(test_dates, y_predictions, label='Predicted', color='red', linestyle='--', marker='x')
+    plt.plot(dates, y_train, marker='o')
     plt.xlabel('Date')
     plt.ylabel('Mean Temp')
     plt.title('Real vs Predicted')
@@ -152,4 +153,48 @@ def run_climate_data(n_lags = 3):
     plt.grid()
     plt.show()
 
-run_climate_data(7)
+def run_random_forest(dataset_path, target_name, feature_names, date_name, n_lags, n_trees, max_depth, min_split_amount):
+    data = pd.read_csv(dataset_path)
+
+    df = pd.DataFrame(data)
+    df['Close'] = df['Close'].diff(1)
+    df['Open'] = df['Open'].diff(1)
+    df['High'] = df['High'].diff(1)
+    df['Low'] = df['Low'].diff(1)
+    df['Volume'] = df['Volume'].diff(1)
+    for lag in range(1, n_lags + 1):
+        for feature in feature_names:
+            df[f'lag_{lag}_{feature}'] = df[feature].shift(lag)
+    df.dropna(inplace=True)
+    x = df.drop(columns=feature_names+[date_name]).iloc[:,:].values
+    #print(x)
+    y = np.array([[item] for item in df[target_name]])
+    dates = data[date_name]
+
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=41, shuffle=False)
+
+    random_forest = RandomForest(n_trees, max_depth, min_split_amount)
+    random_forest.fit(x_train, y_train)
+
+    y_predictions = random_forest.predict(x_test)
+
+    mse = np.sqrt(mean_squared_error(y_test, y_predictions))
+    print(f"Root Mean Squared Error for Random Forest: {mse:.2f}")
+
+    test_dates = dates.iloc[-len(y_test):]
+    plt.figure(figsize=(12, 6))
+    plt.plot(test_dates, y_test, label='Actual', color='blue', marker='o')
+    plt.plot(test_dates, y_predictions, label='Predicted', color='red', linestyle='--', marker='x')
+    plt.xlabel('Date')
+    plt.ylabel(target_name)
+    plt.title('Real vs Predicted')
+    plt.legend()
+    plt.xticks(ticks=np.arange(0, len(y_test), 15))
+    plt.xticks(rotation=15)
+    plt.grid()
+    plt.show()
+#["Open", "High", "Low", "Volume", "Close"]
+#run_climate_data(7)
+#run_random_forest("../Datasets/DailyDelhiClimateTrain.csv", "meantemp",['meantemp', 'humidity', 'wind_speed', 'meanpressure'],"date",7,10,6,5)
+run_random_forest("../Datasets/Microsoft_Stock.csv", "Close", ["Open", "High", "Low", "Volume", "Close"], "Date", 5, 10, 4, 5)
+#run_random_forest("../Datasets/btcusd_1-min_data.csv", "Close", ["Open", "High", "Low", "Volume", "Close"], "Timestamp", 7, 10, 3, 3)
