@@ -4,6 +4,5 @@ Create environment - python -m venv venv
 
 Activate environment - venv\Scripts\activate
 
-Save pip mods - pip freeze > requirements.txt
-
-Load pip mods - pip install -r requirements.txt
+Run run_experiments() in experiments.py to run hand built models
+Run run_experiments(prebuilt=True) in experiments.py to run prebuilt models
